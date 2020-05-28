@@ -44,6 +44,21 @@ func resourceArmSecurityCenterSubscriptionPricing() *schema.Resource {
 					string(security.Standard),
 				}, false),
 			},
+			"pricingName": {
+				Type:     schema.TypeString,
+				Required: false,
+				ValidateFunc: validation.StringInSlice([]string{
+					string("VirtualMachines"),
+					string("KeyVault"),
+					string("StorageAccounts"),
+					//Need to test the below values
+					string("AppService"),
+					string("AzureSQL"),
+					string("SqlServer"),
+					string("AKS"),
+					string("ContainerRegistries"),
+				}, true),
+			},
 		},
 	}
 }
