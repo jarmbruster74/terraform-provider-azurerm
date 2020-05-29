@@ -35,6 +35,22 @@ func testAccAzureRMSecurityCenterSubscriptionPricing_update(t *testing.T) {
 				),
 			},
 			data.ImportStep(),
+			{
+				Config: testAccAzureRMSecurityCenterSubscriptionNamedPricing_tier("KeyVault", "Free"),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckAzureRMSecurityCenterSubscriptionPricingExists(data.ResourceName),
+					resource.TestCheckResourceAttr(data.ResourceName, "tier", "Free"),
+				),
+			},
+			data.ImportStep(),
+			{
+				Config: testAccAzureRMSecurityCenterSubscriptionNamedPricing_tier("KeyVault", "Standard"),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckAzureRMSecurityCenterSubscriptionPricingExists(data.ResourceName),
+					resource.TestCheckResourceAttr(data.ResourceName, "tier", "Free"),
+				),
+			},
+			data.ImportStep(),
 		},
 	})
 }
@@ -74,4 +90,17 @@ resource "azurerm_security_center_subscription_pricing" "test" {
   tier = "%s"
 }
 `, tier)
+}
+
+func testAccAzureRMSecurityCenterSubscriptionNamedPricing_tier(name string, tier string) string {
+	return fmt.Sprintf(`
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_security_center_subscription_pricing" "test" {
+  pricingName = "%s"
+  tier = "%s"
+}
+`, name, tier)
 }

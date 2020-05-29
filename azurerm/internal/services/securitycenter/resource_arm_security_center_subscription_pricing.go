@@ -47,17 +47,7 @@ func resourceArmSecurityCenterSubscriptionPricing() *schema.Resource {
 			"pricingName": {
 				Type:     schema.TypeString,
 				Required: false,
-				ValidateFunc: validation.StringInSlice([]string{
-					string("VirtualMachines"),
-					string("KeyVault"),
-					string("StorageAccounts"),
-					//Need to test the below values
-					string("AppService"),
-					string("AzureSQL"),
-					string("SqlServer"),
-					string("AKS"),
-					string("ContainerRegistries"),
-				}, true),
+				//No Validation since underlying SDK's don't provide a relevant ENum right now (though valid values seem to exist in the API)
 			},
 		},
 	}
@@ -68,7 +58,11 @@ func resourceArmSecurityCenterSubscriptionPricingUpdate(d *schema.ResourceData, 
 	ctx, cancel := timeouts.ForUpdate(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	name := securityCenterSubscriptionPricingName
+	name := d.Get("pricingName").(string)
+
+	if len(name) == 0 {
+		name = securityCenterSubscriptionPricingName
+	}
 
 	// not doing import check as afaik it always exists (cannot be deleted)
 	// all this resource does is flip a boolean
@@ -101,7 +95,12 @@ func resourceArmSecurityCenterSubscriptionPricingRead(d *schema.ResourceData, me
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	resp, err := client.Get(ctx, securityCenterSubscriptionPricingName)
+	name := d.Get("pricingName").(string)
+	if len(name) == 0 {
+		name = securityCenterSubscriptionPricingName
+	}
+
+	resp, err := client.Get(ctx, name)
 	if err != nil {
 		if utils.ResponseWasNotFound(resp.Response) {
 			log.Printf("[DEBUG] Security Center Subscription was not found: %v", err)
@@ -122,4 +121,5 @@ func resourceArmSecurityCenterSubscriptionPricingRead(d *schema.ResourceData, me
 func resourceArmSecurityCenterSubscriptionPricingDelete(_ *schema.ResourceData, _ interface{}) error {
 	log.Printf("[DEBUG] Security Center Subscription deletion invocation")
 	return nil // cannot be deleted.
+	//perhaps this should set config back to default "Free" pricing?
 }
